@@ -1,0 +1,65 @@
+version: "3.6"
+
+services:
+    rabbitmq1:
+        image: rabbitmq:3.12-management
+        container_name: rabbitmq1
+        hostname: rabbitmq1
+        # restart: always
+        ports:
+            - 5672:5672
+            - 15672:15672
+        network_mode: "bridge"
+        volumes:
+            - ./dados:/var/lib/rabbitmq/
+        environment:
+            - RABBITMQ_ERLANG_COOKIE=${RABBITMQ_ERLANG_COOKIE}
+            - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+            - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+            - RABBITMQ_DEFAULT_VHOST=${RABBITMQ_DEFAULT_VHOST}
+            - CLUSTERED=true
+
+    rabbitmq2:
+        image: rabbitmq:3.12-management
+        container_name: rabbitmq2
+        hostname: rabbitmq2
+        links:
+            - rabbitmq1:rabbitmq1
+        environment:
+            - CLUSTERED=true
+            - RABBITMQ_ERLANG_COOKIE=${RABBITMQ_ERLANG_COOKIE}
+            - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+            - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+            - RABBITMQ_DEFAULT_VHOST=${RABBITMQ_DEFAULT_VHOST}
+        network_mode: "bridge"
+        depends_on:
+            - rabbitmq1
+        ports:
+            - 5673:5672
+            - 15673:15672
+        volumes:
+            - ./dados:/var/lib/rabbitmq/
+            - ./cluster-entrypoint.sh:/usr/local/bin/cluster-entrypoint.sh
+ 
+    rabbitmq3:
+        image: rabbitmq:3.12-management
+        container_name: rabbitmq3
+        hostname: rabbitmq3
+        links:
+            - rabbitmq1:rabbitmq1
+            - rabbitmq2:rabbitmq2
+        environment:
+            - CLUSTERED=true
+            - RABBITMQ_ERLANG_COOKIE=${RABBITMQ_ERLANG_COOKIE}
+            - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+            - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+            - RABBITMQ_DEFAULT_VHOST=${RABBITMQ_DEFAULT_VHOST}
+        network_mode: "bridge"
+        depends_on:
+            - rabbitmq1
+        ports:
+            - 5674:5672
+            - 15674:15672
+        volumes:
+            - ./dados:/var/lib/rabbitmq/
+            - ./cluster-entrypoint.sh:/usr/local/bin/cluster-entrypoint.sh

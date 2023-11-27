@@ -1,0 +1,12 @@
+version: "3.6"
+
+services:
+
+  db:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: treinamento
+    ports:
+      - "3308:3306"
